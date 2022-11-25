@@ -80,7 +80,6 @@
                 // 4.將資料包裝成blob物件儲存
                 let testBlob = dataURItoBlob(reader.result);
                 console.log(testBlob);
-                console.log(originalImage.width, originalImage.height);
 
                 // 顯示修正後圖片
                 compressImage(originalImage, resizingFactor, quality);
@@ -160,19 +159,23 @@
             // 3.賦予畫布尺寸
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
-            let sx = (originalWidth*cropLeft).toFixed(0);
-            let sy = (originalWidth*cropTop).toFixed(0);
-            let sWidth = (originalWidth*cropWidth).toFixed(0);
-            let sHeight = (originalWidth*cropHeight).toFixed(0);
-            console.log(`sx: ${sx} sy: ${sy} sWidth: ${sWidth} sHeight: ${sHeight}`);
+            let sx = Number(canvasWidth*cropLeft).toFixed(0);
+            let sy = Number(canvasHeight*cropTop).toFixed(0);
+            let sWidth = Number(canvasWidth*cropWidth).toFixed(0);
+            let sHeight = Number(canvasHeight*cropHeight).toFixed(0);
+            console.log(Number(sx), Number(sHeight));
 
             // 4.將修改後的圖片放上畫布
             context.drawImage(
                 imgToCompress,
+                Number(sx),
+                Number(sy),
+                Number(sWidth),
+                Number(sHeight),
                 0,
                 0,
-                canvasWidth,
-                canvasHeight
+                sWidth,
+                sHeight
             );
 
             // reducing the quality of the image
