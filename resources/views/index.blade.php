@@ -16,19 +16,50 @@
             <label for="">1. </label>
             <input type="file" name="" accept="image/*">
             {{-- <img src="" alt="" id="preview_1" width="200" height="200"> --}}
-            <img src="" alt="" id="preview_1">
         </div>
-        {{-- <div class="m-2 p-5">
-            <label for="">1. </label>
-            <input type="file">
-            <img src="" alt="" id="preview_2">
-        </div> --}}
+        <div>
+            <h2>Original Image</h2>
+            <img src="" alt="" id="preview_1" style="border: 1px solid #000;">
+        </div>
+        <div>
+            <label>Rezise</label><input min="1" max="100" value="80" type="range" name="resize" id="resize">
+            <label>Quality</label><input min="1" max="100" value="80" type="range" name="quality" id="quality">
+        </div>
+        <div>
+            <label>CropLeft</label><input type="range" step="1" name="cropleft" id="cropleft">
+            <label>CropTop</label><input type="range" step="1" name="croptop" id="croptop">
+        </div>
+        <div>
+            <label>CropWidth</label><input type="range" step="1" name="cropwidth" id="cropwidth">
+            <label>CropHeight</label><input type="range" step="1" name="cropheight" id="cropheight">
+        </div>
+        <h2>Compressed Image</h2>
+        <div><b>Size:</b> <span id="size"></span></div>
+        <img id="compressedImage" />
     </main>
 
     <script>
-        const img = document.querySelector("img");
+        const originalImage = document.querySelector("img");
         const input = document.querySelector("input[type=file]");
-        console.log(img, input);
+        console.log(originalImage, input);
+        // 取得DOM物件
+        const resizingElement = document.querySelector("#resize");
+        const qualityElement = document.querySelector("#quality");
+        const cropLeftElement = document.querySelector("#cropleft");
+        const cropTopElement = document.querySelector("#croptop");
+        const cropWidthElement = document.querySelector("#cropwidth");
+        const cropHeightElement = document.querySelector("#cropheight");
+        // 設定初始條件
+        var resizingFactor = 0.8;
+        var quality = 0.8;
+        var cropLeft = 0;
+        var cropTop = 0;
+        var cropWidth = originalImage.width;
+        var cropHeight = originalImage.height;
+
+        // initializing the compressed image
+        compressImage(originalImage, resizingFactor, quality);
+
 
         input.addEventListener('change', (e) => {
             // 1.建立FileReader準備讀取資料
@@ -44,10 +75,11 @@
             reader.addEventListener("load", () => {
                 // convert image file to base64 string
                 // 3.將轉換過後的資料賦予給img標籤的src
-                img.src = reader.result;
+                originalImage.src = reader.result;
                 // 4.將資料包裝成blob物件儲存
                 let testBlob = dataURItoBlob(reader.result);
                 console.log(testBlob);
+                compressImage(originalImage, resizingFactor, quality);
             }, false);
         });
 
@@ -83,6 +115,31 @@
             let file = new File([blob], "name", { type: "image/jpeg", });
             return file;
         }
+
+        resizingElement.oninput = (e) => {
+            resizingFactor = parseInt(e.target.value) / 100;
+            compressImage(originalImage, resizingFactor, quality);
+        };
+        qualityElement.oninput = (e) => {
+            quality = parseInt(e.target.value) / 100;
+            compressImage(originalImage, resizingFactor, quality);
+        };
+        cropLeftElement.oninput = (e) => {
+            quality = parseInt(e.target.value);
+            compressImage(originalImage, resizingFactor, quality);
+        };
+        cropTopElement.oninput = (e) => {
+            quality = parseInt(e.target.value);
+            compressImage(originalImage, resizingFactor, quality);
+        };
+        cropWidthElement.oninput = (e) => {
+            quality = parseInt(e.target.value);
+            compressImage(originalImage, resizingFactor, quality);
+        };
+        cropHeightElement.oninput = (e) => {
+            quality = parseInt(e.target.value);
+            compressImage(originalImage, resizingFactor, quality);
+        };
         function compressImage(imgToCompress, resizingFactor, quality) {
             // showing the compressed image
             // 1. 建立Canvas畫布暫存修改後的圖片
@@ -121,6 +178,18 @@
                 "image/jpeg",
                 quality
             );
+        }
+        // source: https://stackoverflow.com/a/18650828
+        function bytesToSize(bytes) {
+            const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+
+            if (bytes === 0) {
+                return "0 Byte";
+            }
+
+            const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+
+            return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
         }
     </script>
 </body>
