@@ -19,19 +19,19 @@
         </div>
         <div>
             <h2>Original Image</h2>
-            <img src="" alt="" id="preview_1" style="border: 1px solid #000;">
+            <img src="" alt="" id="preview_1" style="outline: 1px solid #000;">
         </div>
         <div>
             <label>Rezise</label><input min="1" max="100" value="80" type="range" name="resize" id="resize">
             <label>Quality</label><input min="1" max="100" value="80" type="range" name="quality" id="quality">
         </div>
         <div>
-            <label>CropLeft</label><input type="range" step="1" name="cropleft" id="cropleft">
-            <label>CropTop</label><input type="range" step="1" name="croptop" id="croptop">
+            <label>CropLeft</label><input type="range" step="1" name="cropleft" id="cropleft" min="0" max="100" value="0">
+            <label>CropTop</label><input type="range" step="1" name="croptop" id="croptop" min="0" max="100" value="0">
         </div>
         <div>
-            <label>CropWidth</label><input type="range" step="1" name="cropwidth" id="cropwidth">
-            <label>CropHeight</label><input type="range" step="1" name="cropheight" id="cropheight">
+            <label>CropWidth</label><input type="range" step="1" name="cropwidth" id="cropwidth" min="0" max="100" value="50">
+            <label>CropHeight</label><input type="range" step="1" name="cropheight" id="cropheight" min="0" max="100" value="50">
         </div>
         <h2>Compressed Image</h2>
         <div><b>Size:</b> <span id="size"></span></div>
@@ -39,7 +39,7 @@
     </main>
 
     <script>
-        const originalImage = document.querySelector("img");
+        const originalImage = document.querySelector("#preview_1");
         const input = document.querySelector("input[type=file]");
         console.log(originalImage, input);
         // 取得DOM物件
@@ -49,13 +49,14 @@
         const cropTopElement = document.querySelector("#croptop");
         const cropWidthElement = document.querySelector("#cropwidth");
         const cropHeightElement = document.querySelector("#cropheight");
+        
         // 設定初始條件
         var resizingFactor = 0.8;
         var quality = 0.8;
         var cropLeft = 0;
         var cropTop = 0;
-        var cropWidth = originalImage.width;
-        var cropHeight = originalImage.height;
+        var cropWidth = 0.5;
+        var cropHeight = 0.5;
 
         // initializing the compressed image
         compressImage(originalImage, resizingFactor, quality);
@@ -79,6 +80,9 @@
                 // 4.將資料包裝成blob物件儲存
                 let testBlob = dataURItoBlob(reader.result);
                 console.log(testBlob);
+                console.log(originalImage.width, originalImage.height);
+
+                // 顯示修正後圖片
                 compressImage(originalImage, resizingFactor, quality);
             }, false);
         });
@@ -125,21 +129,22 @@
             compressImage(originalImage, resizingFactor, quality);
         };
         cropLeftElement.oninput = (e) => {
-            quality = parseInt(e.target.value);
+            cropLeft = parseInt(e.target.value) / 100;
             compressImage(originalImage, resizingFactor, quality);
         };
         cropTopElement.oninput = (e) => {
-            quality = parseInt(e.target.value);
+            cropTop = parseInt(e.target.value) / 100;
             compressImage(originalImage, resizingFactor, quality);
         };
         cropWidthElement.oninput = (e) => {
-            quality = parseInt(e.target.value);
+            cropWidth = parseInt(e.target.value) / 100;
             compressImage(originalImage, resizingFactor, quality);
         };
         cropHeightElement.oninput = (e) => {
-            quality = parseInt(e.target.value);
+            cropHeight = parseInt(e.target.value) / 100;
             compressImage(originalImage, resizingFactor, quality);
         };
+
         function compressImage(imgToCompress, resizingFactor, quality) {
             // showing the compressed image
             // 1. 建立Canvas畫布暫存修改後的圖片
@@ -155,14 +160,19 @@
             // 3.賦予畫布尺寸
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
+            let sx = (originalWidth*cropLeft).toFixed(0);
+            let sy = (originalWidth*cropTop).toFixed(0);
+            let sWidth = (originalWidth*cropWidth).toFixed(0);
+            let sHeight = (originalWidth*cropHeight).toFixed(0);
+            console.log(`sx: ${sx} sy: ${sy} sWidth: ${sWidth} sHeight: ${sHeight}`);
 
             // 4.將修改後的圖片放上畫布
             context.drawImage(
                 imgToCompress,
                 0,
                 0,
-                originalWidth * resizingFactor,
-                originalHeight * resizingFactor
+                canvasWidth,
+                canvasHeight
             );
 
             // reducing the quality of the image
@@ -179,8 +189,10 @@
                 quality
             );
         }
+
         // source: https://stackoverflow.com/a/18650828
         function bytesToSize(bytes) {
+            // 計算圖片容量
             const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
             if (bytes === 0) {
