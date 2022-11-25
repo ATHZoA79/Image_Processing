@@ -121,6 +121,7 @@
 
         resizingElement.oninput = (e) => {
             resizingFactor = parseInt(e.target.value) / 100;
+            // 任何滑桿的改變都會呼叫一次函式
             compressImage(originalImage, resizingFactor, quality);
         };
         qualityElement.oninput = (e) => {
