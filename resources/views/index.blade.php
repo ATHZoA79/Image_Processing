@@ -11,7 +11,7 @@
 
 <body>
     <header></header>
-    <main class="w-full flex justify-center">
+    <main class="flex flex-col justify-center">
         <div class="m-2 p-5">
             <label for="">1. </label>
             <input type="file" name="" accept="image/*">
@@ -24,6 +24,7 @@
         <div>
             <label>Rezise</label><input min="1" max="100" value="80" type="range" name="resize" id="resize">
             <label>Quality</label><input min="1" max="100" value="80" type="range" name="quality" id="quality">
+            <label>Rotate</label><input min="-180" max="180" value="0" type="range" name="rotate" id="rotate">
         </div>
         <div>
             <label>CropLeft</label><input type="range" step="1" name="cropleft" id="cropleft" min="0" max="100" value="0">
@@ -34,17 +35,20 @@
             <label>CropHeight</label><input type="range" step="1" name="cropheight" id="cropheight" min="0" max="100" value="50">
         </div>
         <h2>Compressed Image</h2>
+        <button class="w-1/12 p-2 bg-slate-700 text-center text-slate-300 rounded-md" onclick="Upload()">Upload</button>
         <div><b>Size:</b> <span id="size"></span></div>
-        <img id="compressedImage" />
+        <img id="compressedImage" style="outline:1px solid #555;"/>
     </main>
 
     <script>
         const originalImage = document.querySelector("#preview_1");
+        const compressedImage = document.querySelector("#compressedImage");
         const input = document.querySelector("input[type=file]");
         console.log(originalImage, input);
         // 取得DOM物件
         const resizingElement = document.querySelector("#resize");
         const qualityElement = document.querySelector("#quality");
+        const rotateElement = document.querySelector("#rotate");
         const cropLeftElement = document.querySelector("#cropleft");
         const cropTopElement = document.querySelector("#croptop");
         const cropWidthElement = document.querySelector("#cropwidth");
@@ -53,6 +57,7 @@
         // 設定初始條件
         var resizingFactor = 0.8;
         var quality = 0.8;
+        var rotate = 0;
         var cropLeft = 0;
         var cropTop = 0;
         var cropWidth = 0.5;
@@ -121,11 +126,17 @@
 
         resizingElement.oninput = (e) => {
             resizingFactor = parseInt(e.target.value) / 100;
+            // console.log(resizingFactor);
             // 任何滑桿的改變都會呼叫一次函式
             compressImage(originalImage, resizingFactor, quality);
         };
         qualityElement.oninput = (e) => {
             quality = parseInt(e.target.value) / 100;
+            compressImage(originalImage, resizingFactor, quality);
+        };
+        rotateElement.oninput = (e) => {
+            rotate = parseInt(e.target.value) / 180 * Math.PI;
+            console.log(rotate);
             compressImage(originalImage, resizingFactor, quality);
         };
         cropLeftElement.oninput = (e) => {
@@ -156,6 +167,9 @@
             const originalHeight = imgToCompress.height;
             const canvasWidth = originalWidth * resizingFactor;
             const canvasHeight = originalHeight * resizingFactor;
+            compressedImage.width = originalWidth * resizingFactor;
+            compressedImage.height = originalHeight * resizingFactor;
+            // console.log(canvasWidth, canvasHeight);
 
             // 3.賦予畫布尺寸
             canvas.width = canvasWidth;
@@ -164,20 +178,90 @@
             let sy = Number(canvasHeight*cropTop).toFixed(0);
             let sWidth = Number(canvasWidth*cropWidth).toFixed(0);
             let sHeight = Number(canvasHeight*cropHeight).toFixed(0);
-            console.log(Number(sx), Number(sHeight));
+            console.log(`canvas (width, height) = ${canvasWidth}, ${canvasHeight}`);
+            console.log(Number(sx), Number(sy), Number(sWidth), Number(sHeight));
 
+            // 旋轉畫布
+            console.log(`sin, cos : ${Math.sin(rotate)}, ${Math.cos(rotate)}`);
+            
             // 4.將修改後的圖片放上畫布
-            context.drawImage(
-                imgToCompress,
-                Number(sx),
-                Number(sy),
-                Number(sWidth),
-                Number(sHeight),
-                0,
-                0,
-                sWidth,
-                sHeight
-            );
+            if (rotate<=(Math.PI/2) && rotate>=0) {
+                context.translate(Math.sin(rotate)*originalHeight, 0)
+                context.rotate(rotate);
+                context.fillStyle = "red";
+                context.fillRect(0, 0, 10, 10);
+                context.drawImage(
+                    imgToCompress,
+                    Number(sx),
+                    Number(sy),
+                    Number(sWidth),
+                    Number(sHeight),
+                    0,
+                    0,
+                    sWidth,
+                    sHeight
+                );
+            }
+            else if (rotate>(Math.PI/2)) {
+                context.translate(
+                    Math.abs(Math.cos(rotate) * originalWidth)+Math.sin(rotate) * originalHeight,
+                    Math.abs(Math.cos(rotate) * originalHeight)
+                );
+                context.rotate(rotate);
+                context.fillStyle = "red";
+                context.fillRect(0, 0, 10, 10);
+                context.drawImage(
+                    imgToCompress,
+                    Number(sx),
+                    Number(sy),
+                    Number(sWidth),
+                    Number(sHeight),
+                    0,
+                    0,
+                    sWidth,
+                    sHeight
+                );
+            }
+            else if (rotate >= (-Math.PI/2) && rotate<=0) {
+                context.translate(
+                    0,
+                    Math.abs(Math.sin(rotate) * originalWidth)
+                );
+                context.rotate(rotate);
+                context.fillStyle = "red";
+                context.fillRect(0, 0, 10, 10);
+                context.drawImage(
+                    imgToCompress,
+                    Number(sx),
+                    Number(sy),
+                    Number(sWidth),
+                    Number(sHeight),
+                    0,
+                    0,
+                    sWidth,
+                    sHeight
+                );
+            }
+            else if (rotate < (-Math.PI/2)) {
+                context.translate(
+                    Math.abs(Math.cos(rotate) * originalWidth),
+                    Math.abs(Math.cos(rotate) * originalHeight + Math.sin(rotate) * originalWidth)
+                );
+                context.rotate(rotate);
+                context.fillStyle = "red";
+                context.fillRect(0, 0, 10, 10);
+                context.drawImage(
+                    imgToCompress,
+                    Number(sx),
+                    Number(sy),
+                    Number(sWidth),
+                    Number(sHeight),
+                    0,
+                    0,
+                    sWidth,
+                    sHeight
+                );
+            }
 
             // reducing the quality of the image
             // 5.將圖片存為blob物件，並壓縮畫質
@@ -206,6 +290,13 @@
             const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
 
             return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
+        }
+
+        // 上傳檔案
+        function Upload() {
+            let fd = new FormData();
+            fd.append('_token','{{csrf_token()}}');
+            fd.append();
         }
     </script>
 </body>
