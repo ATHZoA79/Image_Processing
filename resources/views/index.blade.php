@@ -22,22 +22,29 @@
             <img src="" alt="" id="preview_1" style="outline: 1px solid #000;">
         </div>
         <div>
-            <label>Rezise</label><input min="1" max="100" value="80" type="range" name="resize" id="resize">
-            <label>Quality</label><input min="1" max="100" value="80" type="range" name="quality" id="quality">
-            <label>Rotate</label><input min="-180" max="180" value="0" type="range" name="rotate" id="rotate">
+            <label>Rezise</label><input min="1" max="100" value="80" type="range" name="resize"
+                id="resize">
+            <label>Quality</label><input min="1" max="100" value="80" type="range" name="quality"
+                id="quality">
+            <label>Rotate</label><input min="-180" max="180" value="0" type="range" name="rotate"
+                id="rotate">
         </div>
         <div>
-            <label>CropLeft</label><input type="range" step="1" name="cropleft" id="cropleft" min="0" max="100" value="0">
-            <label>CropTop</label><input type="range" step="1" name="croptop" id="croptop" min="0" max="100" value="0">
+            <label>CropLeft</label><input type="range" step="1" name="cropleft" id="cropleft" min="0"
+                max="100" value="0">
+            <label>CropTop</label><input type="range" step="1" name="croptop" id="croptop" min="0"
+                max="100" value="0">
         </div>
         <div>
-            <label>CropWidth</label><input type="range" step="1" name="cropwidth" id="cropwidth" min="0" max="100" value="50">
-            <label>CropHeight</label><input type="range" step="1" name="cropheight" id="cropheight" min="0" max="100" value="50">
+            <label>CropWidth</label><input type="range" step="1" name="cropwidth" id="cropwidth" min="0"
+                max="100" value="50">
+            <label>CropHeight</label><input type="range" step="1" name="cropheight" id="cropheight"
+                min="0" max="100" value="50">
         </div>
         <h2>Compressed Image</h2>
         <button class="w-1/12 p-2 bg-slate-700 text-center text-slate-300 rounded-md" onclick="Upload()">Upload</button>
         <div><b>Size:</b> <span id="size"></span></div>
-        <img id="compressedImage" style="outline:1px solid #555;"/>
+        <img id="compressedImage" style="outline:1px solid #555;" />
     </main>
 
     <script>
@@ -53,7 +60,7 @@
         const cropTopElement = document.querySelector("#croptop");
         const cropWidthElement = document.querySelector("#cropwidth");
         const cropHeightElement = document.querySelector("#cropheight");
-        
+
         // 設定初始條件
         var resizingFactor = 0.8;
         var quality = 0.8;
@@ -62,6 +69,15 @@
         var cropTop = 0;
         var cropWidth = 0.5;
         var cropHeight = 0.5;
+        var canvasWidth = 0;
+        var canvasHeight = 0;
+        var sx = 0;
+        var sy = 0;
+        var sWidth = 0.8;
+        var sHeight = 0.8;
+
+        // 用來存放圖片檔案
+        var imgFile;
 
         // initializing the compressed image
         compressImage(originalImage, resizingFactor, quality);
@@ -96,11 +112,11 @@
             // convert base64/URLEncoded data component to raw binary data held in a string
             var byteString;
             if (dataURI.split(',')[0].indexOf('base64') >= 0)
-            // 陣列:["data:image/png;base64", "iVBORw0KGgoAAAANSUh..."]
+                // 陣列:["data:image/png;base64", "iVBORw0KGgoAAAANSUh..."]
                 byteString = atob(dataURI.split(',')[1]);
             else
-            // 解碼dataURI，建議用decodeURI() 
-            // 1.取陣列:["iVBORw0KGgoAAAANSUh..."]並解碼
+                // 解碼dataURI，建議用decodeURI() 
+                // 1.取陣列:["iVBORw0KGgoAAAANSUh..."]並解碼
                 byteString = unescape(dataURI.split(',')[1]);
 
             // separate out the mime component
@@ -120,7 +136,9 @@
             });
 
             // 5.建立file物件方便傳送
-            let file = new File([blob], "name", { type: "image/jpeg", });
+            let file = new File([blob], "name", {
+                type: "image/jpeg",
+            });
             return file;
         }
 
@@ -165,28 +183,28 @@
             // 2.儲存原圖尺寸及畫布尺寸
             const originalWidth = imgToCompress.width;
             const originalHeight = imgToCompress.height;
-            const canvasWidth = originalWidth * resizingFactor;
-            const canvasHeight = originalHeight * resizingFactor;
+
             compressedImage.width = originalWidth * resizingFactor;
             compressedImage.height = originalHeight * resizingFactor;
             // console.log(canvasWidth, canvasHeight);
 
             // 3.賦予畫布尺寸
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
-            let sx = Number(canvasWidth*cropLeft).toFixed(0);
-            let sy = Number(canvasHeight*cropTop).toFixed(0);
-            let sWidth = Number(canvasWidth*cropWidth).toFixed(0);
-            let sHeight = Number(canvasHeight*cropHeight).toFixed(0);
-            console.log(`canvas (width, height) = ${canvasWidth}, ${canvasHeight}`);
-            console.log(Number(sx), Number(sy), Number(sWidth), Number(sHeight));
+            // canvas.width = canvasWidth;
+            // canvas.height = canvasHeight;
+
+            // console.log(`canvas (width, height) = ${canvasWidth}, ${canvasHeight}`);
+            // console.log(Number(sx), Number(sy), Number(sWidth), Number(sHeight));
 
             // 旋轉畫布
             console.log(`sin, cos : ${Math.sin(rotate)}, ${Math.cos(rotate)}`);
-            
+
             // 4.將修改後的圖片放上畫布
-            if (rotate<=(Math.PI/2) && rotate>=0) {
-                context.translate(Math.sin(rotate)*originalHeight, 0)
+            if (rotate <= (Math.PI / 2) && rotate >= 0) {
+                canvasWidth = Math.sin(rotate) * originalHeight + Math.cos(rotate) * originalWidth;
+                canvasHeight = Math.cos(rotate) * originalHeight + Math.sin(rotate) * originalWidth;
+                setParams(canvas);
+                
+                context.translate(Math.sin(rotate) * originalHeight, 0)
                 context.rotate(rotate);
                 context.fillStyle = "red";
                 context.fillRect(0, 0, 10, 10);
@@ -201,10 +219,12 @@
                     sWidth,
                     sHeight
                 );
-            }
-            else if (rotate>(Math.PI/2)) {
+            } else if (rotate > (Math.PI / 2)) {
+                canvasWidth = Math.abs(Math.cos(rotate) * originalWidth) + Math.sin(rotate) * originalHeight;
+                canvasHeight = Math.abs(Math.cos(rotate) * originalHeight) + Math.sin(rotate) * originalWidth;
+                setParams(canvas);
                 context.translate(
-                    Math.abs(Math.cos(rotate) * originalWidth)+Math.sin(rotate) * originalHeight,
+                    Math.abs(Math.cos(rotate) * originalWidth) + Math.sin(rotate) * originalHeight,
                     Math.abs(Math.cos(rotate) * originalHeight)
                 );
                 context.rotate(rotate);
@@ -221,8 +241,10 @@
                     sWidth,
                     sHeight
                 );
-            }
-            else if (rotate >= (-Math.PI/2) && rotate<=0) {
+            } else if (rotate >= (-Math.PI / 2) && rotate <= 0) {
+                canvasWidth = Math.cos(rotate) * originalWidth + Math.abs(Math.sin(rotate) * originalHeight);
+                canvasHeight = Math.abs(Math.sin(rotate) * originalWidth) + Math.cos(rotate) * originalHeight;
+                setParams(canvas);
                 context.translate(
                     0,
                     Math.abs(Math.sin(rotate) * originalWidth)
@@ -241,8 +263,10 @@
                     sWidth,
                     sHeight
                 );
-            }
-            else if (rotate < (-Math.PI/2)) {
+            } else if (rotate < (-Math.PI / 2)) {
+                canvasWidth = Math.abs(Math.cos(rotate) * originalWidth + Math.sin(rotate) * originalHeight);
+                canvasHeight = Math.abs(Math.cos(rotate) * originalHeight + Math.sin(rotate) * originalWidth);
+                setParams(canvas);
                 context.translate(
                     Math.abs(Math.cos(rotate) * originalWidth),
                     Math.abs(Math.cos(rotate) * originalHeight + Math.sin(rotate) * originalWidth)
@@ -267,11 +291,12 @@
             // 5.將圖片存為blob物件，並壓縮畫質
             canvas.toBlob(
                 (blob) => {
-                if (blob) {
-                    compressedImageBlob = blob;
-                    compressedImage.src = URL.createObjectURL(compressedImageBlob);
-                    document.querySelector("#size").innerHTML = bytesToSize(blob.size);
-                }
+                    if (blob) {
+                        compressedImageBlob = blob;
+                        compressedImage.src = URL.createObjectURL(compressedImageBlob);
+                        document.querySelector("#size").innerHTML = bytesToSize(blob.size);
+                        imgFile = new File([blob], "modifiedImage");
+                    }
                 },
                 "image/jpeg",
                 quality
@@ -292,11 +317,29 @@
             return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
         }
 
+        // 設定畫布大小及裁切參數
+        function setParams(canvas) {
+            compressedImage.width = canvasWidth;
+            compressedImage.height = canvasHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            sx = Number(canvasWidth * cropLeft).toFixed(0);
+            sy = Number(canvasHeight * cropTop).toFixed(0);
+            sWidth = Number(canvasWidth * cropWidth).toFixed(0);
+            sHeight = Number(canvasHeight * cropHeight).toFixed(0);
+        }
         // 上傳檔案
         function Upload() {
-            let fd = new FormData();
-            fd.append('_token','{{csrf_token()}}');
-            fd.append();
+            if (imgFile) {
+                let fd = new FormData();
+                fd.append('_token', '{{ csrf_token() }}');
+                fd.append("uploadImage", imgFile);
+                fetch("{{ route('store_img') }}", {
+                        method: "POST",
+                        body: fd
+                    })
+                    .then();
+            }
         }
     </script>
 </body>
