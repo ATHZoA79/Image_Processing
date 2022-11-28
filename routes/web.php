@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,4 +19,4 @@ Route::get('/', function () {
 });
 
 
-Route::get('/image/store', [Controller::class, "store_img"])->name('store_img');
+Route::post('/image/store', [Controller::class, "store_img"])->name('store_img');
